@@ -1,5 +1,4 @@
 import org.gradle.plugins.signing.Sign
-
 buildscript {
     repositories {
         jcenter()
@@ -7,7 +6,6 @@ buildscript {
         maven { url 'https://dl.bintray.com/content/aalmiray/kordamp' }
     }
     dependencies {
-        classpath 'org.kordamp:markdown-gradle-plugin:1.0.0'
 		classpath 'org.kordamp.gradle:clirr-gradle-plugin:0.2.2'
 		classpath "org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.3.1"
 		classpath 'net.ltgt.gradle:gradle-errorprone-plugin:0.0.13'
@@ -16,9 +14,8 @@ buildscript {
 
 plugins {
     id 'ru.vyarus.animalsniffer' version '1.4.5'
+	id("maven-publish")
 }
-
-apply plugin: 'org.kordamp.gradle.markdown'
 
 apply from: 'version.gradle'
 
@@ -37,7 +34,7 @@ allprojects {
 		rootConfigDir = new File(rootDir, 'config')
 		sonatypeCredentialsAvailable = project.hasProperty('sonatypeUsername') && project.hasProperty('sonatypePassword')
 		isReleaseVersion = !isSnapshot
-		signingRequired = isReleaseVersion
+		signingRequired = !isReleaseVersion
 		sonatypeSnapshotUrl = 'https://oss.sonatype.org/content/repositories/snapshots'
 		sonatypeStagingUrl = 'https://oss.sonatype.org/service/local/staging/deploy/maven2'
 		// Returns only the date in yyyy-MM-dd format, as otherwise, with
@@ -209,20 +206,20 @@ allprojects {
 }
 
 gradle.taskGraph.whenReady { taskGraph ->
-	if (signingRequired
-		&& taskGraph.allTasks.any { it instanceof Sign }) {
+//	if (signingRequired
+//		&& taskGraph.allTasks.any { it instanceof Sign }) {
 		// Use Java 6's console to read from the console (no good for a CI environment)
-		def console = System.console()
-		if (console == null) {
-			throw new Exception("Could not obtain system console (Console is 'null'). Did you build with gradle daemon? Try the same Gradle command with \"--no-daemon\".")
-		}
-		console.printf '\n\nWe have to sign some things in this build.\n\nPlease enter your signing details.\n\n'
-		def password = console.readPassword('GnuPG Private Key Password: ')
-
-		allprojects { ext.'signing.password' = password }
-
-		console.printf '\nThanks.\n\n'
-	}
+//		def console = System.console()
+//		if (console == null) {
+//			throw new Exception("Could not obtain system console (Console is 'null'). Did you build with gradle daemon? Try the same Gradle command with \"--no-daemon\".")
+//		}
+//		console.printf '\n\nWe have to sign some things in this build.\n\nPlease enter your signing details.\n\n'
+//		def password = console.readPassword('GnuPG Private Key Password: ')
+//
+//		allprojects { ext.'signing.password' = password }
+//
+//		console.printf '\nThanks.\n\n'
+//	}
 }
 
 task javadocAll(type: Javadoc) {
@@ -249,13 +246,7 @@ task prepareReleasedocs(type: Copy) {
 	filter(ReplaceTokens, tokens: [version: version, releasedate: builtDate, targetCompatibility: targetCompatibility.toString()])
 }
 
-markdownToHtml {
-	sourceDir = new File(projectDir, "/documentation")
-	outputDir documentationDir
-	configuration = [tables: true, fencedCodeBlocks: true]
-}
-
-task distributionZip(type: Zip, dependsOn: [javadocAll, prepareReleasedocs, markdownToHtml]) {
+task distributionZip(type: Zip, dependsOn: [javadocAll, prepareReleasedocs]) {
 	classifier builtDate
 	into ('javadoc') {
 		from(javadocAllDir)
@@ -512,9 +503,9 @@ configure(gplLicensedProjects) {
 }
 
 configure(androidBootClasspathProjects) {
-	compileJava {
-		options.bootstrapClasspath = files(androidBootClasspath)
-	}
+//	compileJava {
+//		options.bootstrapClasspath = files(androidBootClasspath)
+//	}
 	javadoc {
 		classpath += files(androidBootClasspath)
 	}
