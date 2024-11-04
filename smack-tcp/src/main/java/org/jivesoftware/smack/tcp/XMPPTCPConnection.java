@@ -1041,10 +1041,14 @@ public class XMPPTCPConnection extends AbstractXMPPConnection {
                             break;
                         case "stream":
                             // We found an opening stream.
-                            if ("jabber:client".equals(parser.getNamespace(null))) {
-                                streamId = parser.getAttributeValue("", "id");
-                                String reportedServerDomain = parser.getAttributeValue("", "from");
-                                assert (config.getXMPPServiceDomain().equals(reportedServerDomain));
+                            try {
+                                if ("jabber:client".equals(parser.getNamespace(null))) {
+                                    streamId = parser.getAttributeValue("", "id");
+                                    String reportedServerDomain = parser.getAttributeValue("", "from");
+                                    assert (config.getXMPPServiceDomain().equals(reportedServerDomain));
+                                }
+                            } catch (Exception e) {
+
                             }
                             break;
                         case "error":
