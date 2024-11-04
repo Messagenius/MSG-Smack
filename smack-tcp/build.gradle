@@ -1,7 +1,37 @@
+plugins {
+    id("maven-publish")
+}
 description = """\
 Smack for standard XMPP connections over TCP."""
 
 dependencies {
-	compile project(':smack-core')
-	testCompile project(path: ":smack-core", configuration: "testRuntime")
+    compile project(':smack-core')
+    testCompile project(path: ":smack-core", configuration: "testRuntime")
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            // Print the JAR file path
+            def jarFile = file('build/libs/smack-tcp-4.3.1.jar')
+            from components.java // Automatically includes the built JAR
+            // Optionally, include the artifact line if needed
+            artifact jarFile
+        }
+    }
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/messagenius/msg-smack")
+            credentials {
+                username = "user"
+                password = "token"
+            }
+        }
+    }
+    publications {
+        gpr(MavenPublication) {
+            from(components.java)
+        }
+    }
 }
